@@ -5,55 +5,58 @@
   <meta charset="utf-8" />
   <title>WTP Tracking</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <!-- Leaflet CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
-  />
-
-  <!-- App CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="map"></div>
 
-  <!-- Filter Panel -->
-  <div class="filter-panel">
-    <div class="filter-row">
-      <label>
-        Type
-        <select id="filter-type">
-          <option value="">ทั้งหมด</option>
-        </select>
-      </label>
-      <label>
-        ปีงบประมาณ
-        <select id="filter-year">
-          <option value="">ทั้งหมด</option>
-        </select>
-      </label>
-      <label>
-        สถานะประกัน
-        <select id="filter-warranty">
-          <option value="">ทั้งหมด</option>
-        </select>
-      </label>
-      <label>
-        สถานะ
-        <select id="filter-status">
-          <option value="">ทั้งหมด</option>
-        </select>
-      </label>
-    </div>
-    <div class="filter-actions">
-      <button id="btn-reset">ล้างตัวกรอง</button>
-      <div class="count">
-        จำนวนโครงการ:
-        <span id="match-count">0</span> / <span id="total-count">0</span>
+  <!-- Right stack: filter + stats (no overlap) -->
+  <div class="side-stack">
+    <!-- Filter Panel -->
+    <div class="filter-panel">
+      <div class="filter-row">
+        <label>Type
+          <select id="filter-type"><option value="">ทั้งหมด</option></select>
+        </label>
+        <label>ปีงบประมาณ
+          <select id="filter-year"><option value="">ทั้งหมด</option></select>
+        </label>
+        <label>สถานะประกัน
+          <select id="filter-warranty"><option value="">ทั้งหมด</option></select>
+        </label>
+        <label>สถานะ
+          <select id="filter-status"><option value="">ทั้งหมด</option></select>
+        </label>
       </div>
+      <div class="filter-actions">
+        <button id="btn-reset">ล้างตัวกรอง</button>
+        <div class="count">จำนวนโครงการที่ตรงเงื่อนไข:
+          <span id="match-count">0</span> / <span id="total-count">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Panel (Summary Card) -->
+    <div class="stats-panel">
+      <div class="stats-header">สรุปโครงการ (ตามตัวกรองปัจจุบัน)</div>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-label">ใช้งาน</div><div class="stat-value" id="stat-active">0</div></div>
+        <div class="stat"><div class="stat-label">ปิดใช้งานชั่วคราว</div><div class="stat-value" id="stat-temp">0</div></div>
+        <div class="stat"><div class="stat-label">ปิดใช้งาน</div><div class="stat-value" id="stat-off">0</div></div>
+      </div>
+
+      <div class="stats-subheader">สรุปตามสถานะประกัน</div>
+      <div class="stats-grid two">
+        <div class="stat"><div class="stat-label">อยู่ในประกัน</div><div class="stat-value" id="stat-w-in">0</div></div>
+        <div class="stat"><div class="stat-label">หมดประกัน</div><div class="stat-value" id="stat-w-out">0</div></div>
+      </div>
+
+      <div class="stats-subheader">จำนวนตาม Type</div>
+      <table class="type-table">
+        <thead><tr><th>Type</th><th>จำนวน</th></tr></thead>
+        <tbody id="type-body"></tbody>
+      </table>
     </div>
   </div>
 
@@ -66,14 +69,7 @@
     <div><span class="dot" style="background:#737373"></span>ไม่ทราบสถานะ</div>
   </div>
 
-  <!-- Leaflet JS -->
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
-
-  <!-- App JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
