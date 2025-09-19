@@ -1,19 +1,64 @@
 /* ====== style.css ====== */
-/* Layout base */
-html, body {
-  height: 100%;
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+#map { height: 100%; width: 100%; }
+
+/* Right stack container to prevent overlap */
+.side-stack{
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;              /* ระยะห่างระหว่าง 2 กล่อง */
+  max-width: 420px;
 }
 
-/* Map full-screen */
-#map {
-  height: 100%;
-  width: 100%;
+/* Filter panel */
+.filter-panel{
+  background: rgba(255,255,255,0.98);
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  backdrop-filter: blur(4px);
+  font-size: 13px;
 }
+.filter-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+.filter-row label{ display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+.filter-row select{ padding: 6px 8px; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; font-size: 13px; }
+.filter-actions{ display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 10px; }
+#btn-reset{ padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 8px; background: #f7f7f7; cursor: pointer; font-weight: 600; }
+#btn-reset:hover{ background: #efefef; }
+.count{ font-weight: 600; }
 
-/* Legend box */
-.legend {
+/* Stats panel */
+.stats-panel{
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+  font-size: 13px;
+}
+.stats-header{ font-weight: 800; margin-bottom: 8px; }
+.stats-grid{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.stats-grid.two{ grid-template-columns: 1fr 1fr; }
+.stat{ background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 10px; text-align: center; }
+.stat-label{ color: #475569; font-weight: 700; }
+.stat-value{ font-size: 20px; font-weight: 900; margin-top: 4px; }
+.stats-subheader{ font-weight: 800; margin: 8px 0 6px; }
+
+/* Type table */
+.type-table{ width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.type-table th, .type-table td{ padding: 6px 8px; border-bottom: 1px solid #eee; }
+.type-table th{ text-align: left; color: #475569; }
+/* 👉 ให้หัวข้อ “จำนวน” ชิดขวา และตัวเลขคอลัมน์สุดท้ายก็ขวาอยู่แล้ว */
+.type-table th:last-child{ text-align: right; }
+.type-table td:last-child{ text-align: right; font-weight: 700; }
+
+/* Legend */
+.legend{
   position: absolute;
   bottom: 14px;
   left: 14px;
@@ -26,75 +71,4 @@ html, body {
   line-height: 1.4;
   box-shadow: 0 2px 6px rgba(0,0,0,.1);
 }
-
-.legend .dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 6px;
-  vertical-align: middle;
-}
-
-/* Filter panel */
-.filter-panel {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 1000;
-  background: rgba(255,255,255,0.98);
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 10px 12px;
-  min-width: 320px;
-  max-width: 420px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.12);
-  backdrop-filter: blur(4px);
-  font-size: 13px;
-}
-
-.filter-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 10px;
-}
-
-.filter-row label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-weight: 600;
-}
-
-.filter-row select {
-  padding: 6px 8px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  background: #fff;
-  font-size: 13px;
-}
-
-.filter-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-#btn-reset {
-  padding: 6px 10px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  background: #f7f7f7;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-#btn-reset:hover {
-  background: #efefef;
-}
-
-.count {
-  font-weight: 600;
-}
+.legend .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
