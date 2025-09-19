@@ -19,6 +19,14 @@ const btnReset    = document.getElementById('btn-reset');
 const matchCount  = document.getElementById('match-count');
 const totalCount  = document.getElementById('total-count');
 
+// Summary card DOM
+const statActive  = document.getElementById('stat-active');
+const statTemp    = document.getElementById('stat-temp');
+const statOff     = document.getElementById('stat-off');
+const statWIn     = document.getElementById('stat-w-in');
+const statWOut    = document.getElementById('stat-w-out');
+const typeBody    = document.getElementById('type-body');
+
 // ===== Map =====
 const map = L.map('map').setView([15.5, 101.0], 7);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -43,7 +51,7 @@ function markerColor(status, warrantyStatus) {
   return '#737373';
 }
 
-/** ใช้ includeGridData เพื่อตรวจ row ซ่อน */
+/** ดึงเฉพาะแถวที่ "ไม่ถูกซ่อน" ด้วย includeGridData */
 async function fetchVisibleRows(sheetName) {
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`
             + `?includeGridData=true&ranges=${encodeURIComponent(sheetName)}&key=${API_KEY}`;
@@ -80,10 +88,10 @@ async function fetchVisibleRows(sheetName) {
 }
 
 // ===== State =====
-// กลุ่มตามพื้นที่; แต่เราจะ "นับตามแถว" ด้วย
+// กลุ่มตามพื้นที่; นับโครงการเป็น "แถว"
 const placeGroups = new Map(); // place -> { place, items:[], typeSet, yearSet, warrantySet, statusSet, lat, lng, marker }
 const uniqueVals  = { type: new Set(), year: new Set(), warranty: new Set(), status: new Set() };
-let totalItems = 0;            // ✅ นับจำนวน "แถว (projects)" ทั้งหมด (แถวที่ไม่ถูกซ่อน)
+let totalItems = 0;
 
 // เลือกแถวตัวแทนสำหรับ popup
 function pickRepresentative(items) {
@@ -103,7 +111,7 @@ function populateSelect(selectEl, valuesSet) {
   }
 }
 
-// ===== Matching (แบบ "แถว") =====
+// ===== Matching (ระดับ "แถว") =====
 function itemMatchesFilter(it) {
   const fType     = (selType.value || '').trim();
   const fYear     = (selYear.value || '').trim();
@@ -115,25 +123,74 @@ function itemMatchesFilter(it) {
          (!fStatus   || it.status   === fStatus);
 }
 
-// ฟิลเตอร์: นับจำนวน "แถว" ที่ตรงเงื่อนไข และแสดง marker ถ้ามีอย่างน้อย 1 แถวในพื้นที่นั้นตรง
+// เติมตาราง Type
+function renderTypeTable(typeCounts) {
+  typeBody.innerHTML = '';
+  const rows = Object.entries(typeCounts)
+    .sort((a,b) => b[1] - a[1]); // มาก -> น้อย
+  for (const [t, c] of rows) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td'); td1.textContent = t || '-';
+    const td2 = document.createElement('td'); td2.textContent = String(c);
+    tr.appendChild(td1); tr.appendChild(td2);
+    typeBody.appendChild(tr);
+  }
+}
+
+// ฟิลเตอร์ + สรุปสถิติ
 function applyFilters() {
   let matchedRows = 0;
 
-  for (const group of placeGroups.values()) {
-    const rowsMatchedInGroup = group.items.filter(itemMatchesFilter);
-    const shouldShowMarker = rowsMatchedInGroup.length > 0;
+  // ตามสถานะใช้งาน
+  let active = 0, temp = 0, off = 0;
+  // ตามสถานะประกัน
+  let wIn = 0, wOut = 0;
+  // ตาม Type
+  const typeCounts = {};
 
-    if (group.marker) {
-      const onMap = map.hasLayer(group.marker);
-      if (shouldShowMarker && !onMap) group.marker.addTo(map);
-      else if (!shouldShowMarker && onMap) group.marker.removeFrom(map);
+  for (const group of placeGroups.values()) {
+    const matchedItems = group.items.filter(itemMatchesFilter);
+    matchedRows += matchedItems.length;
+
+    for (const it of matchedItems) {
+      // นับสถานะใช้งาน
+      const st = (it.status || '').trim();
+      if (st === 'เปิดใช้งาน') active++;
+      else if (st === 'ปิดใช้งานชั่วคราว') temp++;
+      else if (st === 'ปิดใช้งาน') off++;
+
+      // นับสถานะประกัน
+      const ws = (it.wStatus || '').trim();
+      if (ws === 'อยู่ในประกัน') wIn++;
+      else if (ws === 'หมดประกัน') wOut++;
+
+      // นับ Type
+      const t = it.type || '-';
+      typeCounts[t] = (typeCounts[t] || 0) + 1;
     }
 
-    matchedRows += rowsMatchedInGroup.length;
+    // แสดง/ซ่อน marker ของพื้นที่ (มีอย่างน้อย 1 แถวตรงเงื่อนไข)
+    const show = matchedItems.length > 0;
+    const m = group.marker;
+    if (m) {
+      const onMap = map.hasLayer(m);
+      if (show && !onMap) m.addTo(map);
+      else if (!show && onMap) m.removeFrom(map);
+    }
   }
 
-  matchCount.textContent = String(matchedRows); // ✅ นับตาม "แถว" ที่ตรงฟิลเตอร์
-  totalCount.textContent = String(totalItems);  // ✅ รวมแถวทั้งหมด (ที่ไม่ถูกซ่อน)
+  // ตัวเลขหลัก
+  matchCount.textContent = String(matchedRows);
+  totalCount.textContent = String(totalItems);
+
+  // การ์ดสรุป
+  statActive.textContent = String(active);
+  statTemp.textContent   = String(temp);
+  statOff.textContent    = String(off);
+  statWIn.textContent    = String(wIn);
+  statWOut.textContent   = String(wOut);
+
+  renderTypeTable(typeCounts);
 }
 
 function resetFilters() {
@@ -175,13 +232,13 @@ async function renderAllSheets() {
         const contactPhone = (r[idxContactPhone] || '-').toString().trim();
         const warrantyDate = (r[idxWarrantyDate] || '-').toString().trim();
 
-        // เก็บค่าไว้สร้าง dropdown
+        // เก็บค่าลง dropdown
         if (type)    uniqueVals.type.add(type);
         if (year)    uniqueVals.year.add(year);
         if (wStatus) uniqueVals.warranty.add(wStatus);
         if (status)  uniqueVals.status.add(status);
 
-        // รวมตาม "พื้นที่"
+        // กลุ่มตามพื้นที่
         if (!placeGroups.has(place)) {
           placeGroups.set(place, {
             place,
@@ -197,15 +254,15 @@ async function renderAllSheets() {
         }
         const g = placeGroups.get(place);
         const item = { place, type, status, wStatus, year, lat, lng, contactName, contactPhone, warrantyDate };
-        g.items.push(item);         // ✅ เก็บเป็น "แถว" หนึ่งรายการ
-        totalItems += 1;            // ✅ นับรวมจำนวนแถว
+        g.items.push(item);
+        totalItems += 1;
 
         g.typeSet.add(type);
         if (year)    g.yearSet.add(year);
         if (wStatus) g.warrantySet.add(wStatus);
         if (status)  g.statusSet.add(status);
 
-        // เก็บพิกัดตัวแทน (แถวแรกที่มีพิกัด)
+        // พิกัดตัวแทน
         if ((!Number.isFinite(g.lat) || !Number.isFinite(g.lng)) &&
             Number.isFinite(lat) && Number.isFinite(lng)) {
           g.lat = lat; g.lng = lng;
@@ -216,7 +273,7 @@ async function renderAllSheets() {
     }
   }
 
-  // สร้าง marker ต่อ "พื้นที่"
+  // สร้าง marker ต่อพื้นที่
   for (const group of placeGroups.values()) {
     if (Number.isFinite(group.lat) && Number.isFinite(group.lng)) {
       const rep = pickRepresentative(group.items);
@@ -251,7 +308,7 @@ async function renderAllSheets() {
   populateSelect(selWarranty, uniqueVals.warranty);
   populateSelect(selStatus, uniqueVals.status);
 
-  // ตั้งค่าตัวเลขเริ่มต้นเป็นการนับ "แถวทั้งหมด"
+  // ตัวเลขเริ่มต้น
   totalCount.textContent = String(totalItems);
   applyFilters();
 }
