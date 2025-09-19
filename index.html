@@ -1,3 +1,4 @@
+<!-- ====== index.html ===== -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -19,10 +20,47 @@
 <body>
   <div id="map"></div>
 
+  <!-- Filter Panel -->
+  <div class="filter-panel">
+    <div class="filter-row">
+      <label>
+        Type
+        <select id="filter-type">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </label>
+      <label>
+        ปีงบประมาณ
+        <select id="filter-year">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </label>
+      <label>
+        สถานะประกัน
+        <select id="filter-warranty">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </label>
+      <label>
+        สถานะ
+        <select id="filter-status">
+          <option value="">ทั้งหมด</option>
+        </select>
+      </label>
+    </div>
+    <div class="filter-actions">
+      <button id="btn-reset">ล้างตัวกรอง</button>
+      <div class="count">
+        จำนวนโครงการ:
+        <span id="match-count">0</span> / <span id="total-count">0</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Legend -->
   <div class="legend">
     <div><span class="dot" style="background:#00E036"></span>ใช้งาน + อยู่ในประกัน</div>
-    <div><span class="dot" style="background:#0B00E0"></span>ใช้งาน + หมดประกัน</div>
+    <div><span class="dot" style="background:#0000E0"></span>ใช้งาน + หมดประกัน</div>
     <div><span class="dot" style="background:#EB7302"></span>ปิดใช้งานชั่วคราว</div>
     <div><span class="dot" style="background:#EB020A"></span>ปิดใช้งาน</div>
     <div><span class="dot" style="background:#737373"></span>ไม่ทราบสถานะ</div>
